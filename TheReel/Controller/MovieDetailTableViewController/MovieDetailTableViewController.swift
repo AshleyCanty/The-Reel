@@ -81,7 +81,13 @@ class MovieDetailTableViewController: UITableViewController {
         } else if indexPath.row == 3 {
             
             let cell = tableView.dequeueReusableCell(withIdentifier: CellIdentifiers.Overview.rawValue, for: indexPath) as! OverviewTableViewCell
-            cell.overview.text = movie.overview
+            if let overview = movie.overview {
+                if overview == "" || overview.count < 1 {
+                    cell.overview.text = LabelTexts.noPlot.rawValue
+                } else {
+                    cell.overview.text = overview
+                }
+            }
             
             return cell
             
@@ -93,7 +99,10 @@ class MovieDetailTableViewController: UITableViewController {
             if self.trailersIDs.count == 0 {
                 cell.playTrailerButton.setTitle(TrailerButton.NoTrailer.rawValue, for: .normal)
                 cell.playTrailerButton.isEnabled = false
-            } else { print("Trailers available") }
+            } else {
+                cell.playTrailerButton.setTitle(TrailerButton.PlayTrailer.rawValue, for: .normal)
+                cell.playTrailerButton.isEnabled = true 
+            }
             
             return cell
             

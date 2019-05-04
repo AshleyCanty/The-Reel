@@ -66,4 +66,8 @@ enum ShareMessage: String {
     case Message = "Hey, you should check out this movie!"
 }
 
+enum LabelTexts: String {
+    case noPlot = "There is no plot available for this film at this time."
+}
+
 
