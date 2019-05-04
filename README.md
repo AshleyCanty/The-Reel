@@ -10,8 +10,6 @@ TheReel is an iOS app built using Swift. It allows users to seek movies by fetch
 
 ![Image of 4](https://github.com/AshleyCanty/The-Reel/blob/master/DemoImages/5.png?raw=true)
 
-![Image of 5](https://github.com/AshleyCanty/The-Reel/blob/master/DemoImages/5.png?raw=true)
-
-![Image of 6](https://github.com/AshleyCanty/The-Reel/blob/master/DemoImages/6.png?raw=true)
+![Image of 5](https://github.com/AshleyCanty/The-Reel/blob/master/DemoImages/6.png?raw=true)
 
 ![Image of 6](https://github.com/AshleyCanty/The-Reel/blob/master/DemoImages/7.png?raw=true)
