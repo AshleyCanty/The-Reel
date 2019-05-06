@@ -22,7 +22,7 @@ extension MovieDetailTableViewController {
     
     func printSavedMovies() {
         savedMovies.forEach { (movie) in
-            print(movie.title, movie.id)
+            print(movie.title ?? "", movie.id ?? "")
         }
     }
     

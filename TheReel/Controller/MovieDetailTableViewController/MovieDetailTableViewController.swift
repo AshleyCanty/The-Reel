@@ -49,6 +49,7 @@ class MovieDetailTableViewController: UITableViewController {
             
             let cell = tableView.dequeueReusableCell(withIdentifier: CellIdentifiers.TopViewCell.rawValue, for: indexPath) as! TopViewTableViewCell
             cell.backdropImage.image = backdropImage
+            print(movie.title, backdropImage)
             cell.title.text = movie.title
             cell.rating.text = self.voteAverage
             cell.genres.text = movie.genres
