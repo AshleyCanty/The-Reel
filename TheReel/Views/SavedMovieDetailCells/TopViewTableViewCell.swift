@@ -14,20 +14,23 @@ class TopViewTableViewCell: UITableViewCell {
     
     @IBOutlet weak var title: UILabel!
     @IBOutlet weak var rating: UILabel!
-    @IBOutlet weak var genres: UILabel!
-    @IBOutlet weak var gradientView: UIView!
-    @IBOutlet weak var backdropImage: UIImageView!
+    @IBOutlet weak var genres: UILabel? {
+        didSet {
+            guard let genres = genres else { return }
+            let genresHeight = genres.optimalHeight
+            genres.frame = CGRect(x: genres.frame.origin.x, y: genres.frame.origin.y, width: genres.frame.width, height: genresHeight)
+            self.layoutIfNeeded()
+            print(genres.frame.height)
+        }
+    }
+    @IBOutlet weak var backgroundImage: UIImageView!
+    @IBOutlet weak var posterImage: UIImageView!
+    @IBOutlet weak var blurView: UIVisualEffectView!
     
     override func awakeFromNib() {
-        setupGradientView()
-    }
-    
-    func setupGradientView() {
-        let layer = CAGradientLayer()
-        layer.frame = gradientView.bounds
-        layer.colors = [UIColor.clear.cgColor, UIColor.black.cgColor]
-        gradientView.backgroundColor = UIColor.clear
-        gradientView.layer.addSublayer(layer)
+        posterImage.clipsToBounds = true
+        posterImage.layer.cornerRadius = 8
+        genres?.adjustsFontSizeToFitWidth = true
     }
 }
 

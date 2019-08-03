@@ -12,11 +12,9 @@ import Alamofire
 
 class SearchResultsViewController: UITableViewController, MovieSearchResultCellDelegate {
     
-    static let imageCache = NSCache<AnyObject, AnyObject>()
     static var savedMovieIndex: IndexPath = [0,0]
     static var savedMovieObject: Movie = Movie()
     static var selectedMovieIndex: IndexPath = IndexPath(row: 0, section: 0)
-    
     
     let persistenceManager = PersistenceManager.shared
     let spinnerView = UIActivityIndicatorView(style: .gray)

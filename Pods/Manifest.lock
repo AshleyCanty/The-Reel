@@ -1,20 +1,24 @@
 PODS:
-  - Alamofire (4.8.1)
+  - Alamofire (4.8.2)
+  - TinyConstraints (4.0.1)
   - youtube-ios-player-helper (0.1.6)
 
 DEPENDENCIES:
   - Alamofire
+  - TinyConstraints
   - youtube-ios-player-helper (~> 0.1.4)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - Alamofire
+    - TinyConstraints
     - youtube-ios-player-helper
 
 SPEC CHECKSUMS:
-  Alamofire: 16ce2c353fb72865124ddae8a57c5942388f4f11
+  Alamofire: ae5c501addb7afdbb13687d7f2f722c78734c2d3
+  TinyConstraints: 8dd91295e56797648c7bc335dd20e1d91ec4c192
   youtube-ios-player-helper: 21ab92db027c7ff86cb17a3843a3f6eafc8158d2
 
-PODFILE CHECKSUM: 76dfdaf61fdbd5a36f70ae5bb1346f428ee0fd45
+PODFILE CHECKSUM: 51d36786db56d453dd731eeca49ddb188aee0a5f
 
 COCOAPODS: 1.6.0.beta.1

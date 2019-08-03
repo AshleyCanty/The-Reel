@@ -22,10 +22,13 @@ class SavedMoviesCollectionController: UICollectionViewController, UICollectionV
                                              bottom: 15.0,
                                              right: 2.0)
     private let itemsPerRow: CGFloat = 3
-    
+    let emptySavedMoviesNib = UINib.init(nibName: "EmptySavedMoviesCell", bundle: nil)
+
     override func viewDidLoad() {
         super.viewDidLoad()
+        collectionView.register(emptySavedMoviesNib, forCellWithReuseIdentifier: "EmptySavedMovies")
         savedMovies = persistenceManager.fetch(SavedMovies.self)
+        navigationController?.navigationBar.shadowImage = UIImage()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -34,32 +37,51 @@ class SavedMoviesCollectionController: UICollectionViewController, UICollectionV
         collectionView.reloadData()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        navigationController?.navigationBar.barStyle = .black
+    }
+    
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CellIdentifiers.MovieCell.rawValue, for: indexPath) as? SavedMovieCollectionViewCell
-        cell?.index = indexPath
-        cell?.id = savedMovies[indexPath.row].id
-        cell?.delegate = self
+        if savedMovies.count == 0 {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "EmptySavedMovies", for: indexPath) as! EmptySavedMoviesCell
+                return cell
+            
+        } else {
         
-        if let data = savedMovies[indexPath.row].posterImage {
-            let image = UIImage(data: data)
-            cell?.cellImage.image = image
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CellIdentifiers.MovieCell.rawValue, for: indexPath) as? SavedMovieCollectionViewCell
+            cell?.index = indexPath
+            cell?.id = savedMovies[indexPath.row].id
+            cell?.delegate = self
+            
+            if let data = savedMovies[indexPath.row].posterImage {
+                let image = UIImage(data: data)
+                cell?.cellImage.image = image
+            }
+            
+            return cell!
         }
-        
-        return cell!
     }
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        if savedMovies.count == 0 {
+            return 1
+        }
         return savedMovies.count
     }
 
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
+        
+        if savedMovies.count == 0 {
+            return CGSize(width: collectionView.bounds.width, height: 55)
+        }
+        
         let paddingSpace = sectionInsets.left * (itemsPerRow )
         let availableWidth = view.frame.width - paddingSpace
         let widthPerItem = availableWidth / itemsPerRow
-
+        
         return CGSize(width: widthPerItem, height: widthPerItem*1.5)
     }
     

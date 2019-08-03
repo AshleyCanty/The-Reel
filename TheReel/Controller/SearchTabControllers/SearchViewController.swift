@@ -10,7 +10,6 @@ import UIKit
 
 class SearchViewController: UIViewController, UITextFieldDelegate {
     
-    @IBOutlet weak var logo: UIImageView!
     @IBOutlet weak var searchBarField: UITextField!
     @IBOutlet weak var searchButton: UIButton!
     
@@ -19,17 +18,15 @@ class SearchViewController: UIViewController, UITextFieldDelegate {
         searchButton.clipsToBounds = true
         searchButton.layer.cornerRadius = 8.0
         searchBarField.delegate = self
-        animateLogo()
+        navigationController?.navigationBar.barStyle = .black
+        navigationController?.navigationBar.shadowImage = UIImage()
+        navigationController?.navigationBar.prefersLargeTitles = true
     }
     
-    func animateLogo() {
-        logo.layer.opacity = 0
-        logo.center.y = -15
-        UIView.animate(withDuration: 0.7, delay: 0, options: .curveEaseInOut, animations: {
-            self.logo.center.y = 0
-            self.logo.layer.opacity = 1
-        }, completion: nil)
+    override func viewDidAppear(_ animated: Bool) {
+        navigationController?.navigationBar.barStyle = .black
     }
+    
     
     @IBAction func searchButtonDidTap() {
         if searchBarField.text == "" || searchBarField == nil {
@@ -46,11 +43,11 @@ class SearchViewController: UIViewController, UITextFieldDelegate {
         self.present(alert, animated: true, completion: nil)
     }
     
-    
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return true
     }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if  segue.identifier == StoryBoardSegues.MovieSearchResults.rawValue {
             let vc = segue.destination as! SearchResultsViewController

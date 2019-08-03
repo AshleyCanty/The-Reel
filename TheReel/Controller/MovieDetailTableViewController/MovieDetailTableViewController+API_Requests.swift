@@ -13,93 +13,83 @@ import Alamofire
 
 // MARK: - MovieDB API Requests
 
+// TODO: - Refactor by making re-usable code, add these network requests to the Network class, use closures
+
 extension MovieDetailTableViewController {
     
+    func updateTitle(with title: String) {
+        self.navigationItem.title = title
+        self.view.layoutIfNeeded()
+    }
+    
     func fetchMovieInformation() {
-        
         guard let id = self.id else { return }
-        let url = URL(string: "\(MovieDBQueries.getMovieDetailsBaseURL)\(id)\(MovieDBQueries.getEnglishVersionTailURL)")!
         
-        Alamofire.request(url).responseJSON { (response) in
+        Network.fetchMovieDetails(fetchWithID: id) { [weak self] movieDetails in
+            guard let self = self else { return }
             
-            if let dict = response.result.value as? Dictionary<String, Any> {
-                let title = dict[MovieDBKeys.Title.rawValue] as? String
-                let date = dict[MovieDBKeys.ReleaseDate.rawValue] as? String
-                let vcount = dict[MovieDBKeys.VoteCount.rawValue] as? Int
-                let vAverage = dict[MovieDBKeys.VoteAverage.rawValue] as? Double
-                let time = dict[MovieDBKeys.Runtime.rawValue] as? Int
-                let overview = dict[MovieDBKeys.Overview.rawValue] as? String
-                let genres = dict[MovieDBKeys.Genres.rawValue] as? [Any]
-                let posterURL = dict[MovieDBKeys.PosterURL.rawValue] as? String
-                let backdropURL = dict[MovieDBKeys.Backdrop.rawValue] as? String
-                
-                self.posterPath = posterURL
-                self.movie.title = title
-                self.movie.releaseDate = date?.changeDateFormat()
-                self.movie.voteCount = vcount?.returnStringDescription()
-                self.movie.runtime = time?.changeTimeFormat()
-                self.movie.overview = overview
-                self.downloadPosterImageData(backdropURL ?? "", posterURL ?? "")
-                
-                if vAverage == nil {
+            if movieDetails.title != "" {
+                DispatchQueue.main.async {
+                    self.updateTitle(with: movieDetails.title ?? "")
+                }
+                self.posterPath = movieDetails.poster_path
+                self.movie.title = movieDetails.title
+                self.movie.releaseDate = movieDetails.release_date?.changeDateFormat()
+                self.movie.voteCount = movieDetails.vote_count?.returnStringDescription()
+                self.movie.runtime = movieDetails.runtime?.changeTimeFormat()
+                self.movie.overview = movieDetails.overview
+                self.downloadPosterImageData(movieDetails.backdrop_path ?? "", movieDetails.poster_path ?? "")
+
+                if movieDetails.vote_average == nil {
                     self.voteAverage = "N/A"
                 } else {
-                    self.voteAverage = vAverage?.returnStringDescription() ?? ""
+                    self.voteAverage = movieDetails.vote_average?.returnStringDescription() ?? ""
                 }
-                
-                if let genres = genres {
-                    var genreString = ""
-                    var counter = 0
-                    var index = 0
-                    for item in genres {
-                        if let item = item as? [String: Any] {
-                            guard let name = item[MovieDBKeys.Name.rawValue] as? String else { return }
-                            if index == (genres.count-1) || counter == 2 {
-                                genreString += "\(name)"
-                            } else {
-                                genreString += "\(name), "
-                            }
-                            counter += 1
+            
+                var genreString = ""
+                var counter = 0
+                var index = 0
+                if let genres = movieDetails.genres {
+                    var slicedArray = genres
+                    if slicedArray.count > 2 {
+                        slicedArray.removeSubrange(2..<genres.count)
+                    }
+                    for item in slicedArray {
+                        guard let name = item.name else { return }
+                        if index == (genres.count-1) || counter == 1 {
+                            genreString += "\(name)"
+                        } else {
+                            genreString += "\(name) and "
                         }
+                        counter += 1
                         index += 1
+                    }
+                    if genreString == "" {
+                        genreString = "N/A"
                     }
                     self.movie.genres = genreString
                 }
                 
-                self.movieAlreadySaved = self.checkCoreDataForExistingMovie(title ?? "", id)
-                self.spinnerView.removeFromSuperview()
-                self.tableView.reloadData()
+                self.movieAlreadySaved = self.checkCoreDataForExistingMovie(movieDetails.title ?? "", id)
+                DispatchQueue.main.async {
+                    self.spinnerView.removeFromSuperview()
+                    self.tableView.reloadData()
+                    self.view.layoutIfNeeded()
+                }
             }
         }
     }
     
     func fetchTrailerURL(){
-        
-        Alamofire.request("\(MovieDBQueries.getMovieDetailsBaseURL)\(id ?? "")\(MovieDBQueries.movieTrailerTailURL)").responseJSON { (response) in
-            guard let dict = response.result.value as? Dictionary<String, Any> else { return }
-            
-            for (k,v) in dict where k == MovieDBKeys.Results.rawValue {
-                guard let arrayOfValues = v as? [Any] else { return }
-                
-                for item in arrayOfValues {
-                    guard let dictionary = item as? [String: Any] else { return }
-                    
-                    for (k,v) in dictionary {
-                        if k == MovieDBKeys.TypeKey.rawValue {
-                            
-                            if let value = v as? String {
-                                if value == MovieDBKeys.Trailer.rawValue {
-                                    
-                                    guard let key = dictionary[MovieDBKeys.Key.rawValue] as? String else { return }
-                                    self.trailersIDs.append(key)
-                                }
-                            }
-                        }
-                    }
-                }
+        guard let id = self.id else { return }
+        Network.fetchTrailerUrl(fetchWithID: id) { [weak self] (key) in
+            guard let self = self else { return }
+            self.trailerKey = key
+
+            DispatchQueue.main.async {
+                self.view.layoutIfNeeded()
+                self.tableView.reloadData()
             }
-            self.view.layoutIfNeeded()
-            self.tableView.reloadData()
         }
     }
     
@@ -107,8 +97,10 @@ extension MovieDetailTableViewController {
         
         if let backdropURL = URL(string: "\(MovieDBQueries.movieImageBaseURL)\(movieBackdropURL)") {
             
-            getData(from: backdropURL) { data, response, error  in
+            getData(from: backdropURL) { [weak self] data, response, error  in
                 guard let data = data, error == nil else { return }
+                guard let self = self else { return }
+                
                 DispatchQueue.main.async {
                     if let lowResData = UIImage(data: data)?.jpeg(.lowest) {
                         self.backdropImage = UIImage(data: lowResData)
@@ -121,18 +113,28 @@ extension MovieDetailTableViewController {
             }
         }
         
-        if let posterURL = URL(string: "\(MovieDBQueries.movieImageBaseURL)\(moviePosterURL)") {
-            
-            getData(from: posterURL) { data, response, error  in
-                guard let data = data, error == nil else { return }
-                DispatchQueue.main.async {
-                    let lowResData = UIImage(data: data)?.jpeg(.lowest)
-                    self.posterImage = UIImage(data: lowResData!)
-                    self.tableView.reloadData()
+        if moviePosterURL != "" {
+            if let posterURL = URL(string: "\(MovieDBQueries.movieImageBaseURL)\(moviePosterURL)") {
+                
+                getData(from: posterURL) { [weak self] data, response, error  in
+                    guard let data = data, error == nil else { return }
+                    guard let self = self else { return }
+                    DispatchQueue.main.async {
+                        let lowResData = UIImage(data: data)?.jpeg(.lowest)
+                        self.posterImage = UIImage(data: lowResData!)
+                        self.tableView.reloadData()
+                    }
                 }
             }
+        } else {
+            DispatchQueue.main.async {
+                self.posterImage = UIImage(named: "noImage")
+                self.tableView.reloadData()
+            }
         }
-        self.tableView.reloadData()
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
     }
     
     func getData(from url: URL, completion: @escaping (Data?, URLResponse?, Error?) -> ()) {

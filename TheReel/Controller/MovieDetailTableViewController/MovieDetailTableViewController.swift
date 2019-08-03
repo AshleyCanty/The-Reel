@@ -19,12 +19,16 @@ class MovieDetailTableViewController: UITableViewController {
     var savedMovies = [SavedMovies]()
     var movieAlreadySaved: Bool!
     var movie: Movie = Movie()
-    var movieID: String?
+    var movieID: String? {
+        didSet {
+            title = movie.title
+        }
+    }
     var posterImage: UIImage?
     var posterPath: String?
     var backdropImage: UIImage?
     var backdropPath: String?
-    var trailersIDs: [String] = []
+    var trailerKey: String?
     var voteAverage = ""
     var id: String?
     
@@ -33,11 +37,23 @@ class MovieDetailTableViewController: UITableViewController {
         spinnerView.startAnimating()
         spinnerView.center = self.view.center
         view.addSubview(spinnerView)
-        fetchMovieInformation()
-        fetchTrailerURL()
+        navigationController?.navigationBar.shadowImage = UIImage()
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            guard let self = self else { return }
+            self.fetchMovieInformation()
+            self.fetchTrailerURL()
+        }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        navigationController?.navigationBar.barStyle = .black
     }
     
     // MARK: - UITableViewDataSource
+    
+    override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        cell.backgroundColor = Colors.darkBlue
+    }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 5
@@ -48,11 +64,11 @@ class MovieDetailTableViewController: UITableViewController {
         if indexPath.row == 0 {
             
             let cell = tableView.dequeueReusableCell(withIdentifier: CellIdentifiers.TopViewCell.rawValue, for: indexPath) as! TopViewTableViewCell
-            cell.backdropImage.image = backdropImage
-            print(movie.title, backdropImage)
+            cell.backgroundImage.image = posterImage
+            cell.posterImage.image = posterImage
             cell.title.text = movie.title
             cell.rating.text = self.voteAverage
-            cell.genres.text = movie.genres
+            cell.genres?.text = movie.genres
             return cell
             
         } else if indexPath.row == 1 {
@@ -66,6 +82,14 @@ class MovieDetailTableViewController: UITableViewController {
                 } else {
                     cell.saveMovieButton.setImage(UIImage(named: ImageNames.emptyHeart.rawValue), for: .normal)
                 }
+            }
+            
+            if self.trailerKey == "" {
+                cell.playTrailerButton.setTitle(TrailerButton.NoTrailer.rawValue, for: .normal)
+                cell.playTrailerButton.isEnabled = false
+            } else {
+                cell.playTrailerButton.setTitle(TrailerButton.PlayTrailer.rawValue, for: .normal)
+                cell.playTrailerButton.isEnabled = true
             }
             
             return cell
@@ -92,26 +116,8 @@ class MovieDetailTableViewController: UITableViewController {
             
             return cell
             
-        } else if indexPath.row == 4 {
-            
-            let cell = tableView.dequeueReusableCell(withIdentifier: CellIdentifiers.TrailerCell.rawValue, for: indexPath) as! TrailerTableViewCell
-            cell.delegate = self
-            
-            if self.trailersIDs.count == 0 {
-                cell.playTrailerButton.setTitle(TrailerButton.NoTrailer.rawValue, for: .normal)
-                cell.playTrailerButton.isEnabled = false
-            } else {
-                cell.playTrailerButton.setTitle(TrailerButton.PlayTrailer.rawValue, for: .normal)
-                cell.playTrailerButton.isEnabled = true 
-            }
-            
-            return cell
-            
         } else {
-            
-            let cell = tableView.dequeueReusableCell(withIdentifier: CellIdentifiers.TopViewCell.rawValue, for: indexPath) as! TopViewTableViewCell
-            return cell
-            
+            return UITableViewCell()
         }
     }
     
@@ -120,7 +126,7 @@ class MovieDetailTableViewController: UITableViewController {
         if indexPath.row == 0 {
             return 250
         } else if indexPath.row == 1 {
-            return 46
+            return 75
         } else if indexPath.row == 2 {
             return 110
         } else if indexPath.row == 3 {
@@ -134,7 +140,7 @@ class MovieDetailTableViewController: UITableViewController {
         if indexPath.row == 0 {
             return 250
         } else if indexPath.row == 1 {
-            return 46
+            return 75
         } else if indexPath.row == 2 {
             return 110
         } else if indexPath.row == 3 {

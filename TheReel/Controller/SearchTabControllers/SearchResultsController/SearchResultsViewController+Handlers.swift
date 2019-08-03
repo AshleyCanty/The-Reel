@@ -98,24 +98,27 @@ extension SearchResultsViewController {
         guard let databaseGenreList = movieGenres else { return " " }
         for id in movieGenreIDs {
             for genre in databaseGenreList {
-                
+                print(databaseGenreList)
                 if genre.id == id {
                     guard let name = genre.name else { return " "}
                     
-                    if index == movieGenreIDs.count-1 || counter == 2 {
+                    if index == movieGenreIDs.count-1 || counter == 1 {
                         genreNames += "\(name)"
                         return genreNames
                     } else {
-                        genreNames += "\(name), "
+                        genreNames += "\(name) and "
                     }
+                    
                     counter += 1
                 }
             }
             index += 1
         }
+        if genreNames == "" {
+            genreNames = "N/A"
+        }
         return genreNames
     }
-
     
     // MARK: - Core Data Functions
     
@@ -148,7 +151,6 @@ extension SearchResultsViewController {
             movie.genres = cell.movie?.genres
             movie.saved = true
         }
-        
         persistenceManager.save()
         
         let deadline = DispatchTime.now() + 2
@@ -188,49 +190,6 @@ extension SearchResultsViewController {
     func printSavedMovies() {
         savedMovies.forEach { (movie) in
             print(movie.title!, movie.id!)
-        }
-    }
-}
-
- // MARK: - Retrieve Poster Images and Store in Cache
-
-extension UIImageView {
-    typealias ImageCacheLoaderCompletionHandler = ((UIImage) -> ())
-    
-    func downloadImageFromCacheUsingURL(posterPath: String?, completionHandler: @escaping ImageCacheLoaderCompletionHandler) {
-        
-        guard let path = posterPath else {
-            self.image = UIImage(named: ImageNames.noImage.rawValue)
-            return
-        }
-        
-        guard let url = URL(string: "\(MovieDBQueries.movieImageBaseURL)\(path)") else {
-            self.image = UIImage(named: ImageNames.noImage.rawValue)
-            return
-        }
-        
-        guard let imageFromCache = SearchResultsViewController.imageCache.object(forKey: url as AnyObject) else {
-            do {
-                
-                Alamofire.request(url).response { (response) in
-                    if let data = response.data {
-                        guard let lowResData = UIImage(data: data)?.jpeg(.lowest) else { return }
-                        guard let lowResImage = UIImage(data: lowResData) else { return }
-                        SearchResultsViewController.imageCache.setObject(lowResImage, forKey: url as AnyObject)
-                        self.image = lowResImage
-                        DispatchQueue.main.async {
-                            completionHandler(lowResImage)
-                        }
-                    }
-                }
-            }
-            return
-        }
-        
-        let cachedImage = imageFromCache as! UIImage
-        self.image = cachedImage
-        DispatchQueue.main.async {
-            completionHandler(cachedImage)
         }
     }
 }

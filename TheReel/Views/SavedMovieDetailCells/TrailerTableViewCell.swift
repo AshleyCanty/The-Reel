@@ -8,15 +8,8 @@
 
 import Foundation
 import UIKit
-
-
-protocol MovieTrailerDelegate: class {
-    func presentMovieTrailer()
-}
-
 class TrailerTableViewCell: UITableViewCell {
     @IBOutlet weak var playTrailerButton: UIButton!
-    weak var delegate: MovieTrailerDelegate?
     
     override func awakeFromNib() {
         playTrailerButton.clipsToBounds = true
@@ -24,6 +17,5 @@ class TrailerTableViewCell: UITableViewCell {
     }
 
     @IBAction func playTrailerButtonDidTap() {
-        delegate?.presentMovieTrailer()
     }
 }

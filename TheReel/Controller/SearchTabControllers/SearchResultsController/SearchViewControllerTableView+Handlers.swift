@@ -27,7 +27,7 @@ extension SearchResultsViewController{
         if let movie = movies?[indexPath.row] {
             cell.movieTitleLabel.text = movie.title
             cell.movieGenresLabel.text = movie.genreIDs?.description
-            cell.moviePosterImage.downloadImageFromCacheUsingURL(posterPath: movie.posterPath, completionHandler: {(image) in
+            cell.moviePosterImage.downloadImageFromCacheUsingURL(imgPath: movie.posterPath, completionHandler: {(image) in
                 if let updateCell = tableView.cellForRow(at: indexPath) as? MovieSearchResultCell {
                     updateCell.moviePosterImage.image = image
                 }

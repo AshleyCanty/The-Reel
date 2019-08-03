@@ -9,6 +9,7 @@ target 'TheReel' do
 
 	pod 'Alamofire'
 	pod 'youtube-ios-player-helper', '~> 0.1.4'
+	pod 'TinyConstraints'
 
 
 end
